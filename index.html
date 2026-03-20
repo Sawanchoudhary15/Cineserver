@@ -498,7 +498,9 @@ function closeSheet(e) {
 function placeOrder() {
   const seat = new URLSearchParams(window.location.search).get('seat') || 'A12';
   document.getElementById('sheetOverlay').classList.remove('open');
-  window.location.href = `order-confirmation.html?seat=${seat}`;
+  const total = Object.keys(cart).reduce((s, id) => s + cart[id] * items.find(i => i.id == id).price, 0);
+const cartItems = encodeURIComponent(JSON.stringify(Object.keys(cart).map(id => ({name: items.find(i=>i.id==id).name, qty: cart[id], price: items.find(i=>i.id==id).price}))));
+window.location.href = `order-confirmation.html?seat=${seat}&total=${total}&items=${cartItems}`;
 }
 function resetOrder() {
   cart = {};

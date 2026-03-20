@@ -496,9 +496,9 @@ function closeSheet(e) {
 }
 
 function placeOrder() {
+  const seat = new URLSearchParams(window.location.search).get('seat') || 'A12';
   document.getElementById('sheetOverlay').classList.remove('open');
-  document.getElementById('successScreen').classList.add('open');
-}
+  window.location.href = `order-confirmation.html?seat=${seat}`;
 
 function resetOrder() {
   cart = {};

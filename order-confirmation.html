@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Order Confirmed — CineServe</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0b;
+    --surface: #141416;
+    --surface2: #1c1c1f;
+    --border: rgba(255,255,255,0.07);
+    --gold: #e8b84b;
+    --gold-dim: rgba(232,184,75,0.10);
+    --gold-border: rgba(232,184,75,0.25);
+    --text: #f0ede8;
+    --muted: #6b6866;
+    --muted2: #3a3835;
+    --green: #3dbd7a;
+    --green-dim: rgba(61,189,122,0.10);
+    --green-border: rgba(61,189,122,0.25);
+    --radius: 16px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.5;
+  }
+
+  /* Ambient glow top */
+  .glow-top {
+    position: fixed;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    height: 340px;
+    background: radial-gradient(circle, rgba(61,189,122,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px 48px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 0;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+  }
+  .seat-pill {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* Success icon */
+  .icon-wrap {
+    margin: 36px auto 0;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--green-dim);
+    border: 1px solid var(--green-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    animation-delay: 0.1s;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  .checkmark {
+    width: 36px;
+    height: 36px;
+    stroke: var(--green);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+  .check-path {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: drawCheck 0.45s ease forwards;
+    animation-delay: 0.45s;
+  }
+  @keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .confirmed-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 34px;
+    letter-spacing: 0.08em;
+    text-align: center;
+    margin: 20px 0 6px;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.3s;
+  }
+  .confirmed-sub {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 300;
+    font-style: italic;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.4s;
+    margin-bottom: 28px;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Seat + ETA card */
+  .main-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.5s;
+    margin-bottom: 12px;
+  }
+
+  .seat-section {
+    padding: 22px 22px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .seat-label {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .seat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 0.06em;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .seat-hall {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .seat-icon {
+    width: 52px;
+    height: 52px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  /* ETA timer section */
+  .eta-section {
+    padding: 18px 22px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .eta-left {}
+  .eta-label {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .eta-time {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+  }
+  .eta-unit {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-top: 4px;
+  }
+
+  /* Circular countdown */
+  .countdown-ring {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    flex-shrink: 0;
+  }
+  .ring-svg {
+    transform: rotate(-90deg);
+    width: 62px;
+    height: 62px;
+  }
+  .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 3; }
+  .ring-fill {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 163;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+  }
+  .ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .ring-min { font-size: 9px; color: var(--muted); letter-spacing: 0.06em; }
+
+  /* Order summary card */
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 22px;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.6s;
+    margin-bottom: 12px;
+  }
+  .summary-title {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .order-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .order-line:last-of-type { border-bottom: none; }
+
+  .order-line-left { display: flex; align-items: center; gap: 10px; }
+  .order-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+  .order-name { font-size: 13px; color: var(--text); }
+  .order-qty { font-size: 12px; color: var(--muted); }
+  .order-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--gold);
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .total-label { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .total-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--text);
+  }
+
+  /* Order ID + status strip */
+  .status-card {
+    background: var(--green-dim);
+    border: 1px solid var(--green-border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.7s;
+    margin-bottom: 12px;
+  }
+  .status-left {}
+  .status-label { font-size: 11px; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+  .status-id { font-size: 13px; color: var(--muted); }
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(61,189,122,0.15);
+    border: 1px solid var(--green-border);
+    border-radius: 20px;
+    padding: 5px 12px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.4s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+  .status-text { font-size: 12px; color: var(--green); font-weight: 500; }
+
+  /* Bottom CTA */
+  .cta-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.8s;
+  }
+  .btn-primary {
+    flex: 1;
+    background: var(--gold);
+    color: #0a0a0b;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:active { opacity: 0.82; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .btn-ghost:active { border-color: var(--muted); }
+
+  /* Steps */
+  .steps-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 22px;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.65s;
+    margin-bottom: 12px;
+  }
+  .steps-title {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding-bottom: 14px;
+    position: relative;
+  }
+  .step:last-child { padding-bottom: 0; }
+  .step-line {
+    position: absolute;
+    left: 13px;
+    top: 28px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .step:last-child .step-line { display: none; }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step-num.done { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+  .step-num.active { background: var(--gold-dim); border: 1px solid var(--gold-border); color: var(--gold); }
+  .step-num.pending { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+  .step-content { padding-top: 4px; }
+  .step-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .step-desc { font-size: 12px; color: var(--muted); font-weight: 300; }
+</style>
+</head>
+<body>
+
+<div class="glow-top"></div>
+
+<div class="page">
+
+  <div class="top-bar">
+    <div class="logo">CineServe</div>
+    <div class="seat-pill">Seat A12</div>
+  </div>
+
+  <div class="icon-wrap">
+    <svg class="checkmark" viewBox="0 0 36 36">
+      <path class="check-path" d="M7 18 L15 26 L29 11"/>
+    </svg>
+  </div>
+
+  <div class="confirmed-title">Order Confirmed!</div>
+  <div class="confirmed-sub">Sit back — we're on our way to you</div>
+
+  <!-- Seat + ETA -->
+  <div class="main-card">
+    <div class="seat-section">
+      <div>
+        <div class="seat-label">Your Seat</div>
+        <div class="seat-num">A12</div>
+        <div class="seat-hall">Hall 3 · Row A</div>
+      </div>
+      <div class="seat-icon">🎬</div>
+    </div>
+    <div class="eta-section">
+      <div class="eta-left">
+        <div class="eta-label">Estimated Delivery</div>
+        <div class="eta-time" id="etaDisplay">10</div>
+        <div class="eta-unit">minutes remaining</div>
+      </div>
+      <div class="countdown-ring">
+        <svg class="ring-svg" viewBox="0 0 62 62">
+          <circle class="ring-bg" cx="31" cy="31" r="26"/>
+          <circle class="ring-fill" id="ringFill" cx="31" cy="31" r="26"/>
+        </svg>
+        <div class="ring-label">
+          <div class="ring-num" id="ringNum">10</div>
+          <div class="ring-min">min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live status -->
+  <div class="status-card">
+    <div class="status-left">
+      <div class="status-label">Order status</div>
+      <div class="status-id">Order #CS-2847</div>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <div class="status-text">Preparing</div>
+    </div>
+  </div>
+
+  <!-- Progress steps -->
+  <div class="steps-card">
+    <div class="steps-title">What's happening</div>
+    <div class="step">
+      <div class="step-num done">✓</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <div class="step-name">Order received</div>
+        <div class="step-desc">Kitchen got your order at 7:42 PM</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num active" id="step2num">2</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <div class="step-name">Being prepared</div>
+        <div class="step-desc">Your snacks are being freshly made</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num pending" id="step3num">3</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <div class="step-name">On the way to you</div>
+        <div class="step-desc">Staff will walk to your seat</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num pending" id="step4num">4</div>
+      <div class="step-content">
+        <div class="step-name">Delivered</div>
+        <div class="step-desc">Enjoy the show!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order summary -->
+  <div class="summary-card">
+    <div class="summary-title">Order Summary</div>
+    <div class="order-line">
+      <div class="order-line-left">
+        <div class="order-dot"></div>
+        <div>
+          <div class="order-name">Butter Popcorn (Large)</div>
+          <div class="order-qty">Qty: 1</div>
+        </div>
+      </div>
+      <div class="order-price">₹220</div>
+    </div>
+    <div class="order-line">
+      <div class="order-line-left">
+        <div class="order-dot"></div>
+        <div>
+          <div class="order-name">Classic Coke (500ml)</div>
+          <div class="order-qty">Qty: 2</div>
+        </div>
+      </div>
+      <div class="order-price">₹240</div>
+    </div>
+    <div class="order-line">
+      <div class="order-line-left">
+        <div class="order-dot"></div>
+        <div>
+          <div class="order-name">Chilli Cheese Fries</div>
+          <div class="order-qty">Qty: 1</div>
+        </div>
+      </div>
+      <div class="order-price">₹240</div>
+    </div>
+    <div class="total-row">
+      <div class="total-label">Total paid</div>
+      <div class="total-val">₹700</div>
+    </div>
+  </div>
+
+  <!-- CTAs -->
+  <div class="cta-row">
+    <button class="btn-primary" onclick="window.location.href='cinema-menu.html'">Order More</button>
+    <button class="btn-ghost">Need Help?</button>
+  </div>
+
+</div>
+
+<script>
+const TOTAL_SECONDS = 10 * 60;
+let remaining = TOTAL_SECONDS;
+const circumference = 2 * Math.PI * 26;
+
+function tick() {
+  if (remaining <= 0) return;
+  remaining--;
+  const mins = Math.ceil(remaining / 60);
+  const pct = remaining / TOTAL_SECONDS;
+  const offset = circumference * (1 - pct);
+
+  document.getElementById('etaDisplay').textContent = mins;
+  document.getElementById('ringNum').textContent = mins;
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+
+  // Step progression
+  const elapsed = TOTAL_SECONDS - remaining;
+  if (elapsed > 120) {
+    document.getElementById('step2num').className = 'step-num done';
+    document.getElementById('step2num').textContent = '✓';
+    document.getElementById('step3num').className = 'step-num active';
+    document.querySelector('.status-text').textContent = 'On the way';
+  }
+  if (elapsed > 480) {
+    document.getElementById('step3num').className = 'step-num done';
+    document.getElementById('step3num').textContent = '✓';
+    document.getElementById('step4num').className = 'step-num active';
+    document.querySelector('.status-text').textContent = 'Delivered';
+    document.querySelector('.status-dot').style.animation = 'none';
+    document.querySelector('.status-dot').style.background = '#3dbd7a';
+  }
+}
+
+document.getElementById('ringFill').style.strokeDasharray = circumference;
+document.getElementById('ringFill').style.strokeDashoffset = 0;
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

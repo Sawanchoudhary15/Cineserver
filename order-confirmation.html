@@ -601,6 +601,9 @@
 </div>
 
 <script>
+const params = new URLSearchParams(window.location.search);
+const seat = params.get('seat') || 'A12';
+document.querySelectorAll('.seat-num, .seat-pill, .seat-tag').forEach(el => el.textContent = seat);
 const TOTAL_SECONDS = 10 * 60;
 let remaining = TOTAL_SECONDS;
 const circumference = 2 * Math.PI * 26;

@@ -603,7 +603,26 @@
 <script>
 const params = new URLSearchParams(window.location.search);
 const seat = params.get('seat') || 'A12';
+const total = params.get('total') || '700';
+const orderItems = JSON.parse(decodeURIComponent(params.get('items') || '[]'));
+
 document.querySelectorAll('.seat-num, .seat-pill, .seat-tag').forEach(el => el.textContent = seat);
+document.querySelector('.total-val').textContent = '₹' + total;
+
+if (orderItems.length > 0) {
+  document.querySelector('#orderLines').innerHTML = orderItems.map(item => `
+    <div class="order-line">
+      <div class="order-line-left">
+        <div class="order-dot"></div>
+        <div>
+          <div class="order-name">${item.name}</div>
+          <div class="order-qty">Qty: ${item.qty}</div>
+        </div>
+      </div>
+      <div class="order-price">₹${item.price * item.qty}</div>
+    </div>
+  `).join('');
+}
 const TOTAL_SECONDS = 10 * 60;
 let remaining = TOTAL_SECONDS;
 const circumference = 2 * Math.PI * 26;
